@@ -1,5 +1,19 @@
+@font-face {
+  font-family: "Alexandria";
+  src: url("./assets/fonts/Alexandria.ttf") format("woff2");
+}
+
+h1 {
+  font-family: "Alexandria", sans-serif;
+}
+
 .App {
   text-align: center;
+  background-color: #31c48d;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .App-logo {
