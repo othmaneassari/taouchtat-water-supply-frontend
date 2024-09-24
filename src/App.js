@@ -14,6 +14,9 @@ function App() {
     temperature: "",
     precipitation: "",
   });
+
+  const [eauRequise, setEauRequise] = useState(null);
+
   function handlechange(e) {
     setFormData({
       ...formData,
@@ -24,8 +27,10 @@ function App() {
   const handlesubmit = (e) => {
     e.preventDefault();
     console.log("Form Data: ", formData);
+    const temperature = parseFloat(formData.temperature);
+    const precipitation = parseFloat(formData.precipitation);
     let isValid = true;
-    const re = /^\d+$/;
+    const re = /^\d+(\.\d+)?$/;
     const validateData = () => {
       if (!formData.temperature) {
         setError((prevError) => ({
@@ -53,14 +58,17 @@ function App() {
         }));
         isValid = false;
       }
-
       if (isValid) {
         axios
-          .post("https://localhost:7026/api/Irrigation/estimation", formData)
+          .post("https://localhost:7026/api/Irrigation/estimation", {
+            temperature,
+            precipitation,
+          })
           .then((response) => {
             console.log("API response:", response.data);
             console.log(formData);
             if (response.data.status === "Success") {
+              setEauRequise(response.data.eauRequise);
               setShowResult(true);
             }
           })
@@ -75,45 +83,71 @@ function App() {
     <div className="App">
       <div className="flex flex-col items-center justify-between h-[50vh]">
         <div className="flex justify-center w-full h-screen">
-          <img className="h-[180px] w-[180px] mt-5" src={logotr} alt=""></img>
+          <img className="h-[180px] w-[180px] mt-5" src={logotr} alt="" />
         </div>
-        <div className="flex justify-center gap-4 mt-12 mb-12">
-          <div className="flex flex-col">
-            <input
-              type="text"
-              name="temperature"
-              placeholder="Temperature (°C)"
-              onChange={handlechange}
-              className="border-2 border-[#31C48D] rounded-lg p-2 w-48"
-            />
-            {error.temperature && (
-              <span className="text-red-600 text-[11px] mt-3">
-                {error.temperature}
-              </span>
-            )}
+        {showResult ? (
+          <div className="flex flex-col items-center justify-center h-[50vh]">
+            <h2 className="text-2xl font-semibold">
+              Eau Requise: {eauRequise} L
+            </h2>
+            <button
+              onClick={() => {
+                setShowResult(false);
+                setFormData({
+                  temperature: "",
+                  precipitation: "",
+                });
+                setError({
+                  temperature: "",
+                  precipitation: "",
+                });
+              }}
+              className="mt-4 bg-black text-white rounded-lg p-2 w-48 transition duration-300 ease-in-out hover:bg-white hover:text-black"
+            >
+              Go back
+            </button>
           </div>
-          <div className="flex flex-col">
-            <input
-              type="text"
-              name="precipitation"
-              placeholder="Precipitation (mm)"
-              onChange={handlechange}
-              className="border-2 border-[#31C48D] rounded-lg p-2 w-48"
-            />
-            {error.precipitation && (
-              <span className="text-red-600 text-[11px] mt-3">
-                {error.precipitation}
-              </span>
-            )}
-          </div>
-        </div>
-        <button
-          type="submit"
-          onClick={handlesubmit}
-          className="bg-black text-white rounded-lg p-2 w-48 transition duration-300 ease-in-out hover:bg-white hover:text-black"
-        >
-          Submit
-        </button>
+        ) : (
+          <>
+            <div className="flex justify-center gap-4 mt-12 mb-12">
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="temperature"
+                  placeholder="Temperature (°C)"
+                  onChange={handlechange}
+                  className="border-2 border-[#31C48D] rounded-lg p-2 w-48"
+                />
+                {error.temperature && (
+                  <span className="text-red-600 text-[11px] mt-3">
+                    {error.temperature}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col">
+                <input
+                  type="text"
+                  name="precipitation"
+                  placeholder="Precipitation (mm)"
+                  onChange={handlechange}
+                  className="border-2 border-[#31C48D] rounded-lg p-2 w-48"
+                />
+                {error.precipitation && (
+                  <span className="text-red-600 text-[11px] mt-3">
+                    {error.precipitation}
+                  </span>
+                )}
+              </div>
+            </div>
+            <button
+              type="submit"
+              onClick={handlesubmit}
+              className="bg-black text-white rounded-lg p-2 w-48 transition duration-300 ease-in-out hover:bg-white hover:text-black"
+            >
+              Submit
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
